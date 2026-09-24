@@ -1,1 +1,187 @@
-index.html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Run Dino Hikam</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#f5f5f5;
+  font-family:Arial,sans-serif;
+  text-align:center;
+  touch-action:manipulation;
+}
+h1{margin:20px 0 5px}
+#score{font-size:20px;margin:10px}
+#game{
+  position:relative;
+  width:95%;
+  max-width:800px;
+  height:300px;
+  margin:auto;
+  background:white;
+  border:3px solid #222;
+  overflow:hidden;
+}
+#dino{
+  position:absolute;
+  left:60px;
+  bottom:25px;
+  width:45px;
+  height:55px;
+  background:#333;
+  border-radius:10px 10px 4px 4px;
+}
+#dino:before{
+  content:"";
+  position:absolute;
+  width:10px;height:10px;
+  background:white;
+  border-radius:50%;
+  right:7px;top:10px;
+}
+#cactus{
+  position:absolute;
+  right:-40px;
+  bottom:25px;
+  width:25px;
+  height:55px;
+  background:#16852f;
+  border-radius:5px;
+}
+#ground{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:25px;
+  background:#555;
+}
+button{
+  margin-top:15px;
+  padding:12px 25px;
+  font-size:18px;
+  border:0;
+  border-radius:10px;
+  background:#222;
+  color:white;
+}
+#info{margin:12px;color:#555}
+</style>
+</head>
+
+<body>
+
+<h1>🦖 Run Dino Hikam</h1>
+<div id="score">Skor: 0</div>
+
+<div id="game">
+  <div id="dino"></div>
+  <div id="cactus"></div>
+  <div id="ground"></div>
+</div>
+
+<div id="info">Tekan layar / tombol untuk lompat</div>
+<button onclick="restart()">Mulai / Ulangi</button>
+
+<script>
+const dino=document.getElementById("dino");
+const cactus=document.getElementById("cactus");
+const scoreText=document.getElementById("score");
+
+let jumping=false;
+let gameOver=true;
+let score=0;
+let speed=6;
+
+function jump(){
+  if(jumping || gameOver)return;
+  jumping=true;
+
+  let y=0;
+  const up=setInterval(()=>{
+    y+=7;
+    dino.style.bottom=(25+y)+"px";
+
+    if(y>=120){
+      clearInterval(up);
+
+      const down=setInterval(()=>{
+        y-=7;
+        dino.style.bottom=(25+y)+"px";
+
+        if(y<=0){
+          clearInterval(down);
+          dino.style.bottom="25px";
+          jumping=false;
+        }
+      },20);
+    }
+  },20);
+}
+
+function start(){
+  gameOver=false;
+  score=0;
+  speed=6;
+  cactus.style.right="-40px";
+  loop();
+}
+
+function loop(){
+  if(gameOver)return;
+
+  let pos=-40;
+  const move=setInterval(()=>{
+    if(gameOver){
+      clearInterval(move);
+      return;
+    }
+
+    pos+=speed;
+    cactus.style.right=pos+"px";
+
+    if(pos>window.innerWidth){
+      clearInterval(move);
+      score++;
+      scoreText.textContent="Skor: "+score;
+      speed=Math.min(12,6+score/10);
+      loop();
+    }
+
+    const dinoBottom=parseInt(dino.style.bottom||25);
+    const cactusRight=parseInt(cactus.style.right);
+
+    if(cactusRight>window.innerWidth*0.45 &&
+       cactusRight<window.innerWidth*0.85 &&
+       dinoBottom<70){
+      gameOver=true;
+      alert("Game Over! Skor kamu: "+score);
+    }
+  },20);
+}
+
+function restart(){
+  gameOver=true;
+  score=0;
+  scoreText.textContent="Skor: 0";
+  cactus.style.right="-40px";
+  dino.style.bottom="25px";
+  setTimeout(start,100);
+}
+
+document.addEventListener("touchstart",jump);
+document.addEventListener("keydown",e=>{
+  if(e.code==="Space" || e.code==="ArrowUp"){
+    e.preventDefault();
+    jump();
+  }
+});
+
+restart();
+</script>
+
+</body>
+</html>
